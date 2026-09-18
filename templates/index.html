@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Task Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="page">
+
+    <header class="masthead">
+      <div class="tab">Planner</div>
+      <h1>Student Task Manager</h1>
+      <p class="dateline" id="dateline"></p>
+    </header>
+
+    <section class="composer">
+      <form id="task-form">
+        <input type="text" id="title" placeholder="Write your next task&hellip;" autocomplete="off" required />
+        <div class="composer-row">
+          <label class="field">
+            <span>Subject</span>
+            <select id="category">
+              <option value="General">General</option>
+              <option value="Assignment">Assignment</option>
+              <option value="Exam">Exam</option>
+              <option value="Project">Project</option>
+              <option value="Personal">Personal</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Priority</span>
+            <select id="priority">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+            </select>
+          </label>
+          <button type="submit">Add task</button>
+        </div>
+      </form>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-filter="all">All</button>
+      <button class="tab-btn" data-filter="active">In progress</button>
+      <button class="tab-btn" data-filter="completed">Done</button>
+      <span id="task-count" class="count"></span>
+    </nav>
+
+    <main>
+      <ul id="task-list" class="task-list"></ul>
+      <div id="empty-state" class="empty-state" style="display:none;">
+        <p>Nothing here yet.</p>
+        <span>Add a task above to start your list.</span>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
