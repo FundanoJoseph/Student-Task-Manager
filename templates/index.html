@@ -12,7 +12,13 @@
   <div class="page">
 
     <header class="masthead">
-      <div class="tab">Planner</div>
+      <div class="masthead-top">
+        <div class="tab">Planner</div>
+        <div class="account">
+          <span>{{ username }}</span>
+          <a href="{{ url_for('logout') }}">Log out</a>
+        </div>
+      </div>
       <h1>Student Task Manager</h1>
       <p class="dateline" id="dateline"></p>
     </header>
@@ -38,6 +44,10 @@
               <option value="Medium" selected>Medium</option>
               <option value="High">High</option>
             </select>
+          </label>
+          <label class="field">
+            <span>Due date</span>
+            <input type="date" id="due-date" />
           </label>
           <button type="submit">Add task</button>
         </div>

@@ -7,6 +7,7 @@ const form = document.getElementById('task-form');
 const titleInput = document.getElementById('title');
 const categoryInput = document.getElementById('category');
 const priorityInput = document.getElementById('priority');
+const dueDateInput = document.getElementById('due-date');
 const taskList = document.getElementById('task-list');
 const emptyState = document.getElementById('empty-state');
 const taskCount = document.getElementById('task-count');
@@ -23,31 +24,55 @@ dateline.textContent = new Date().toLocaleDateString(undefined, {
 // ---------- API calls ----------
 async function fetchTasks() {
   const res = await fetch(API_URL);
+  if (res.status === 401) {
+    window.location.href = '/login';
+    return;
+  }
   allTasks = await res.json();
   render();
 }
 
 async function addTask(task) {
-  await fetch(API_URL, {
+  const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task),
   });
+  if (res.status === 401) {
+    window.location.href = '/login';
+    return;
+  }
   await fetchTasks();
 }
 
 async function updateTask(id, updates) {
-  await fetch(`${API_URL}/${id}`, {
+  const res = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
   });
+  if (res.status === 401) {
+    window.location.href = '/login';
+    return;
+  }
   await fetchTasks();
 }
 
 async function deleteTask(id) {
-  await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+  if (res.status === 401) {
+    window.location.href = '/login';
+    return;
+  }
   await fetchTasks();
+}
+
+// ---------- Formatting helpers ----------
+function formatDueDate(isoDate) {
+  // isoDate is "YYYY-MM-DD"
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 // ---------- Rendering ----------
@@ -66,6 +91,10 @@ function render() {
       const li = document.createElement('li');
       li.className = `task-item priority-${task.priority} ${task.completed ? 'completed' : ''}`;
 
+      const dueBadge = task.dueDate
+        ? `<span class="due-badge ${task.overdue ? 'overdue' : ''}">${task.overdue ? 'Overdue · ' : 'Due '}${escapeHtml(formatDueDate(task.dueDate))}</span>`
+        : '';
+
       li.innerHTML = `
         <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} />
         <div class="task-info">
@@ -73,6 +102,7 @@ function render() {
           <div class="task-meta">
             <span>${escapeHtml(task.category)}</span>
             <span>${escapeHtml(task.priority)} priority</span>
+            ${dueBadge}
           </div>
         </div>
         <button class="delete-btn" title="Delete task">Remove</button>
@@ -109,9 +139,11 @@ form.addEventListener('submit', (e) => {
     title,
     category: categoryInput.value,
     priority: priorityInput.value,
+    dueDate: dueDateInput.value || null,
   });
 
   titleInput.value = '';
+  dueDateInput.value = '';
   titleInput.focus();
 });
 
