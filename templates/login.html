@@ -4,35 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Log in — Student Task Manager</title>
+  <meta name="theme-color" content="#0F7173" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-96.png') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-180.png') }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
   <div class="auth-page">
     <div class="auth-card">
-      <div class="tab">Planner</div>
+      <div class="tab"><span class="tab-dot" aria-hidden="true"></span> Planner</div>
       <h1>Welcome back</h1>
-      <p class="dateline">Log in to see your tasks.</p>
+      <p class="dateline">Log in to see your tasks — and install the app for offline access.</p>
 
       {% if error %}
-        <p class="auth-error">{{ error }}</p>
+        <p class="auth-error">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          {{ error }}
+        </p>
       {% endif %}
 
       <form method="POST" action="{{ url_for('login') }}">
         <label class="field">
           <span>Username</span>
-          <input type="text" name="username" required autofocus />
+          <input type="text" name="username" required autofocus autocomplete="username" />
         </label>
         <label class="field">
           <span>Password</span>
-          <input type="password" name="password" required />
+          <input type="password" name="password" required autocomplete="current-password" />
         </label>
-        <button type="submit">Log in</button>
+        <button type="submit">Log in →</button>
       </form>
 
       <p class="auth-switch">No account yet? <a href="{{ url_for('register') }}">Create one</a></p>
+      <p style="text-align:center; margin-top:14px; font-size:0.78rem; color:var(--ink-faint)">✨ Installable · Works offline · Feels native on phone & desktop</p>
     </div>
   </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(()=> navigator.serviceWorker.register('/static/sw.js').catch(()=>{}));
+      });
+    }
+  </script>
 </body>
 </html>
