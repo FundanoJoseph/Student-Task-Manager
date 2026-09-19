@@ -11,7 +11,7 @@ from functools import wraps
 
 from flask import (
     Flask, jsonify, request, render_template,
-    redirect, url_for, session, g
+    redirect, url_for, session, g, send_from_directory
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -259,6 +259,24 @@ def delete_task(task_id):
     db.commit()
     return jsonify({'message': 'Task deleted successfully.'})
 
+
+# ---------- PWA: service worker & manifest at root scope ----------
+# Browsers require service worker to be at top-level scope ("/") for full control.
+# We keep the file in /static/sw.js but also serve it at /sw.js.
+@app.route('/sw.js')
+def service_worker():
+    resp = send_from_directory(os.path.join(app.root_path, 'static'), 'sw.js')
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Service-Worker-Allowed'] = '/'
+    return resp
+
+@app.route('/manifest.json')
+def manifest_root():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'manifest.json', mimetype='application/manifest+json')
+
+@app.route('/offline')
+def offline():
+    return render_template('index.html', username=session.get('username', 'Student'))
 
 @app.route('/api/health')
 def health():

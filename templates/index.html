@@ -3,29 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Task Manager</title>
+  <title>Student Task Manager — Your aesthetic planner</title>
+  <meta name="description" content="A beautiful, installable planner for assignments, exams and projects. Organize your student life with delight." />
+  <meta name="theme-color" content="#0F7173" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Planner" />
+  <meta name="application-name" content="Planner" />
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-96.png') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-180.png') }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
+  <!-- animated ambience -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
   <div class="page">
 
     <header class="masthead">
       <div class="masthead-top">
-        <div class="tab">Planner</div>
+        <div class="brand-left">
+          <div class="tab"><span class="tab-dot" aria-hidden="true"></span> Planner</div>
+        </div>
         <div class="account">
           <span>{{ username }}</span>
           <a href="{{ url_for('logout') }}">Log out</a>
         </div>
       </div>
-      <h1>Student Task Manager</h1>
+      <h1>Student <em>Task</em> Manager</h1>
       <p class="dateline" id="dateline"></p>
+
+      <!-- progress delight -->
+      <div class="progress-wrap" id="progress-wrap" aria-live="polite">
+        <div class="progress-ring" id="progress-ring" style="--progress: 0%"><span>0%</span></div>
+        <div class="progress-text">
+          <strong id="progress-label">Loading tasks…</strong>
+          <p id="progress-detail">Your progress will appear here.</p>
+          <div class="progress-bar" aria-hidden="true"><i id="progress-bar" style="--progress:0%"></i></div>
+        </div>
+      </div>
     </header>
 
-    <section class="composer">
+    <!-- PWA install banners -->
+    <div id="install-banner" class="install-banner" role="dialog" aria-label="Install app">
+      <div class="install-banner-icon"><img src="{{ url_for('static', filename='icons/icon-192.png') }}" alt="" /></div>
+      <div class="install-banner-text">
+        <strong>Install Planner</strong>
+        <span>Add to your home screen for instant access & offline use.</span>
+      </div>
+      <div class="install-banner-actions">
+        <button id="btn-install" class="btn-install">Install</button>
+        <button id="btn-dismiss" class="btn-dismiss">Not now</button>
+      </div>
+    </div>
+
+    <div id="ios-hint" class="ios-hint">
+      <strong>Install on iPhone:</strong> tap <span aria-hidden="true">⎙</span> Share → <strong>Add to Home Screen</strong> to use Planner like an app — works offline and feels native.
+      <button id="btn-ios-dismiss" class="btn-dismiss" style="margin-left:8px; padding:4px 10px; font-size:0.78rem; background:white; color:var(--ink); border-color:var(--paper-line)">Dismiss</button>
+    </div>
+
+    <section class="composer" aria-label="Add a new task">
       <form id="task-form">
-        <input type="text" id="title" placeholder="Write your next task&hellip;" autocomplete="off" required />
+        <input type="text" id="title" placeholder="Write your next task…  (press / to focus)" autocomplete="off" required maxlength="140" />
         <div class="composer-row">
           <label class="field">
             <span>Subject</span>
@@ -49,27 +94,40 @@
             <span>Due date</span>
             <input type="date" id="due-date" />
           </label>
-          <button type="submit">Add task</button>
+          <button type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Add task
+          </button>
         </div>
       </form>
     </section>
 
-    <nav class="tabs">
+    <nav class="tabs" aria-label="Filter tasks">
       <button class="tab-btn active" data-filter="all">All</button>
       <button class="tab-btn" data-filter="active">In progress</button>
       <button class="tab-btn" data-filter="completed">Done</button>
-      <span id="task-count" class="count"></span>
+      <span id="task-count" class="count" aria-live="polite"></span>
     </nav>
 
     <main>
-      <ul id="task-list" class="task-list"></ul>
+      <ul id="task-list" class="task-list" aria-live="polite"></ul>
       <div id="empty-state" class="empty-state" style="display:none;">
-        <p>Nothing here yet.</p>
-        <span>Add a task above to start your list.</span>
+        <div class="empty-state-illus" aria-hidden="true">✨</div>
+        <p>Your list is clear</p>
+        <span>Add a task above — watch it come to life.</span>
+        <div class="hint">Tip: press <strong>/</strong> to quickly add · Install the app for offline use</div>
       </div>
     </main>
 
+    <footer class="app-footer">
+      <span>Planner is installable — works offline, feels native.</span>
+      <span aria-hidden="true">·</span>
+      <span id="install-hint-footer">Tap <strong>Install</strong> above when you see it, or use browser menu → Install app</span>
+    </footer>
+
   </div>
+
+  <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
