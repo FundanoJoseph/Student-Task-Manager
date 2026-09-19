@@ -1,6 +1,3 @@
-// Student Task Manager - Service Worker
-// Provides offline shell, caching, and installability
-
 const CACHE_NAME = 'planner-v2';
 const SHELL = [
   '/',
@@ -35,15 +32,12 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Skip non-GET
   if (req.method !== 'GET') return;
 
-  // API: network-first, fallback to cache if offline (stale)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          // cache successful GETs for offline reading
           if (res.ok) {
             const clone = res.clone();
             caches.open(CACHE_NAME).then((c) => c.put(req, clone));
@@ -55,7 +49,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation: network-first with offline fallback to cached "/"
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -72,7 +65,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets: cache-first, then network
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
@@ -85,7 +77,6 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() => {
-          // fallback for images
           if (req.destination === 'image') return caches.match('/static/icons/icon-192.png');
         });
     })

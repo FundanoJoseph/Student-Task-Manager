@@ -1,9 +1,3 @@
-# app.py
-# Flask backend for the Student Task Manager
-# Adds: user accounts (register/login/logout) so each user has their own
-# private task list, and due dates with overdue highlighting.
-# Storage: SQLite (single file database, no external DB service needed)
-
 import os
 import sqlite3
 from datetime import datetime, timezone, date
@@ -16,8 +10,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-# IMPORTANT: set a real SECRET_KEY environment variable in production
-# (e.g. in Render's dashboard) so login sessions can't be forged.
+# Production: set a real SECRET_KEY env var so sessions can't be forged.
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-only-change-this-secret-key')
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
@@ -261,8 +254,6 @@ def delete_task(task_id):
 
 
 # ---------- PWA: service worker & manifest at root scope ----------
-# Browsers require service worker to be at top-level scope ("/") for full control.
-# We keep the file in /static/sw.js but also serve it at /sw.js.
 @app.route('/sw.js')
 def service_worker():
     resp = send_from_directory(os.path.join(app.root_path, 'static'), 'sw.js')

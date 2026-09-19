@@ -1,6 +1,3 @@
-// Student Task Manager — Aesthetic Edition
-// Talks to Flask backend, adds motion, PWA install, confetti & toasts
-
 const API_URL = '/api/tasks';
 
 const form = document.getElementById('task-form');
@@ -14,7 +11,6 @@ const taskCount = document.getElementById('task-count');
 const tabButtons = document.querySelectorAll('.tab-btn');
 const dateline = document.getElementById('dateline');
 
-// new aesthetic elements (may be null on auth pages)
 const progressRing = document.getElementById('progress-ring');
 const progressLabel = document.getElementById('progress-label');
 const progressDetail = document.getElementById('progress-detail');
@@ -91,7 +87,6 @@ function burstConfetti(x = window.innerWidth / 2, y = window.innerHeight / 2) {
       if (p.life > p.ttl) return;
       alive = true;
       p.x += p.vx * 0.016 * 60 * 0.016 * 100;
-      // simpler physics
       p.x += p.vx * 0.18;
       p.y += p.vy * 0.18;
       p.vy += 0.28;
@@ -103,7 +98,6 @@ function burstConfetti(x = window.innerWidth / 2, y = window.innerHeight / 2) {
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot * Math.PI / 180);
       ctx.fillStyle = p.color;
-      // rounded rect particle
       const w = p.r, h = p.r * 0.62;
       ctx.beginPath();
       ctx.roundRect(-w/2, -h/2, w, h, 3);
@@ -162,12 +156,9 @@ function setupInstallUI() {
       localStorage.setItem('planner-ios-dismissed', '1');
     });
   }
-  // iOS hint
   if (isIos() && !isStandalone() && iosHint && !localStorage.getItem('planner-ios-dismissed')) {
-    // show after a short delay, and only if not already showing install banner via beforeinstallprompt (which never fires on iOS)
     setTimeout(() => iosHint.classList.add('visible'), 1200);
   }
-  // if already installed, hide everything
   if (isStandalone() && installBanner) installBanner.classList.remove('visible');
   if (isStandalone() && iosHint) iosHint.classList.remove('visible');
 }
@@ -177,7 +168,6 @@ setupInstallUI();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then((reg) => {
-      // check for updates
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;
@@ -188,7 +178,6 @@ if ('serviceWorker' in navigator) {
         });
       });
     }).catch(() => {
-      // fallback try static path (for dev)
       navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
     });
   });
@@ -196,7 +185,6 @@ if ('serviceWorker' in navigator) {
 
 // ---------- API calls ----------
 async function fetchTasks() {
-  // skeleton
   if (taskList && allTasks.length === 0) {
     taskList.innerHTML = '';
     for (let i = 0; i < 3; i++) {
@@ -213,7 +201,6 @@ async function fetchTasks() {
     render();
   } catch (err) {
     showToast('You’re offline — showing cached tasks', 'default');
-    // try cache fallback handled by SW, but still try to render what we have
     render();
   }
 }
@@ -232,7 +219,6 @@ async function addTask(task) {
   }
   await fetchTasks();
   showToast('Task added ✨', 'success', 1800);
-  // tiny pulse on composer
   const composer = document.querySelector('.composer');
   if (composer) {
     composer.style.transform = 'translateY(-1px) scale(1.005)';
@@ -254,7 +240,6 @@ async function updateTask(id, updates, opts = {}) {
   await fetchTasks();
   if (opts.completed) {
     showToast('Nice work! ✅', 'success', 1800);
-    // confetti near the checkbox
     if (opts.rect) burstConfetti(opts.rect.left + opts.rect.width/2, opts.rect.top);
   }
 }
@@ -262,7 +247,6 @@ async function updateTask(id, updates, opts = {}) {
 async function deleteTask(id, el) {
   if (el) {
     el.classList.add('removing');
-    // wait for animation before actually deleting (feels more delightful)
     await new Promise(r => setTimeout(r, 300));
   }
   const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
@@ -272,7 +256,6 @@ async function deleteTask(id, el) {
     showToast('Could not delete task', 'error');
     return;
   }
-  // keep animation; fetch will re-render but we can optimistic remove
   await fetchTasks();
   showToast('Task removed', 'default', 1600);
 }
@@ -304,7 +287,6 @@ function render() {
   if (currentFilter === 'active') visibleTasks = allTasks.filter((t) => !t.completed);
   if (currentFilter === 'completed') visibleTasks = allTasks.filter((t) => t.completed);
 
-  // progress computation
   const total = allTasks.length;
   const done = allTasks.filter(t=>t.completed).length;
   const pct = total === 0 ? 0 : Math.round(done/total*100);
@@ -368,7 +350,6 @@ function render() {
       cb.addEventListener('change', (e) => {
         const rect = cb.getBoundingClientRect();
         const checked = e.target.checked;
-        // optimistic animation: small scale
         li.style.transform = checked ? 'scale(0.99)' : '';
         updateTask(task.id, { completed: checked }, { completed: checked, rect });
         if (checked && navigator.vibrate) navigator.vibrate(18);
@@ -379,7 +360,6 @@ function render() {
         if (navigator.vibrate) navigator.vibrate(10);
       });
 
-      // subtle entrance tilt for fun
       li.addEventListener('mouseenter', () => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       });
@@ -387,13 +367,11 @@ function render() {
       taskList.appendChild(li);
     });
 
-  // animated count
   const activeCount = allTasks.filter((t) => !t.completed).length;
   if (taskCount) {
     const label = currentFilter === 'completed' ? `${allTasks.filter(t=>t.completed).length} completed` :
                   currentFilter === 'active' ? `${activeCount} in progress` :
                   `${activeCount} in progress · ${allTasks.filter(t=>t.completed).length} done`;
-    // tiny count bump animation
     taskCount.style.transform = 'scale(1.06)';
     taskCount.textContent = label;
     setTimeout(()=> taskCount.style.transform = '', 180);
@@ -439,7 +417,6 @@ if (form) {
     titleInput.focus();
   });
 
-  // quick add with Enter on due date triggers submit (native) but ensure UX
   titleInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.metaKey) form.requestSubmit();
   });
@@ -451,7 +428,6 @@ if (tabButtons) {
       tabButtons.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.filter;
-      // re-render with a soft fade
       if (taskList) {
         taskList.style.opacity = '0.55';
         taskList.style.transform = 'translateY(4px)';
@@ -469,12 +445,10 @@ if (tabButtons) {
   });
 }
 
-// quick action via URL (?action=new)
 if (new URLSearchParams(location.search).get('action') === 'new' && titleInput) {
   setTimeout(()=> titleInput.focus(), 300);
 }
 
-// global keyboard: "/" to focus
 window.addEventListener('keydown', (e) => {
   if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) && titleInput) {
     e.preventDefault();
@@ -482,10 +456,8 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Init
 if (taskList) fetchTasks();
 
-// Add subtle parallax to orbs on mouse
 if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   window.addEventListener('mousemove', (e) => {
     const orbs = document.querySelectorAll('.orb');
